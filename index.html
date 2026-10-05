@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LINK status</title>
+<style>
+:root{--bg:#fff;--fg:#111827;--muted:#6b7280;--line:#e5e7eb;--ok:#15803d;--bad:#b91c1c;--warn:#b45309}
+@media (prefers-color-scheme:dark){:root{--bg:#0b0f14;--fg:#e5e7eb;--muted:#9ca3af;--line:#1f2937;--ok:#4ade80;--bad:#f87171;--warn:#fbbf24}}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+main{max-width:42rem;margin:0 auto;padding:2rem 1rem}
+h1{font-size:1.5rem;margin:0}
+.op{color:var(--muted);margin:.25rem 0 1.5rem}
+.banner{font-weight:600;padding:1rem;border:1px solid var(--line);border-radius:.5rem;margin-bottom:1.5rem}
+.banner.ok{color:var(--ok)}.banner.bad{color:var(--bad)}.banner.warn{color:var(--warn)}
+.inc{border:1px solid var(--line);border-radius:.5rem;padding:1rem;margin-bottom:1rem}
+.inc h2{font-size:1.1rem;margin:0 0 .25rem}
+.meta{color:var(--muted);font-size:.875rem}
+.inc ul{margin:.5rem 0 0;padding-left:1.25rem}
+footer{color:var(--muted);font-size:.875rem;margin-top:2rem;border-top:1px solid var(--line);padding-top:1rem}
+a{color:inherit}
+</style>
+</head>
+<body>
+<main>
+<h1>LINK status</h1>
+<p class="op">Operated by Daedalus Technology LLC</p>
+<div id="status" aria-live="polite">Loading status...</div>
+<footer>Independent of LINK's hosting. Also at <a href="https://status.xdaedalus.com">https://status.xdaedalus.com</a></footer>
+</main>
+<script>
+(function () {
+  var STATES = { investigating: 'Investigating', identified: 'Identified', monitoring: 'Monitoring', resolved: 'Resolved' };
+  var FOURTEEN_DAYS = 14 * 24 * 60 * 60 * 1000;
+
+  function esc(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function lastTouched(inc) {
+    var t = Date.parse(inc.started);
+    var ups = Array.isArray(inc.updates) ? inc.updates : [];
+    for (var i = 0; i < ups.length; i++) {
+      var u = Date.parse(ups[i] && ups[i].at);
+      if (u > t || isNaN(t)) t = u;
+    }
+    return t;
+  }
+
+  function valid(data) {
+    return data && typeof data === 'object' && Array.isArray(data.incidents);
+  }
+
+  function render(data, now) {
+    var el = document.getElementById('status');
+    var html;
+    now = typeof now === 'number' ? now : Date.now();
+    if (!valid(data)) {
+      html = '<div class="banner warn">Status data unavailable</div>' +
+        '<p>All systems operational unless an incident is listed. Please check back shortly.</p>';
+    } else {
+      var shown = data.incidents.filter(function (inc) {
+        if (!inc || typeof inc !== 'object') return false;
+        if (inc.state !== 'resolved') return true;
+        var t = lastTouched(inc);
+        return !isNaN(t) && now - t <= FOURTEEN_DAYS;
+      });
+      var open = shown.filter(function (i) { return i.state !== 'resolved'; });
+      if (open.length === 0) {
+        html = '<div class="banner ok">All systems operational</div>';
+      } else {
+        html = '<div class="banner bad">' + (open.length === 1 ? 'An incident is in progress' : open.length + ' incidents in progress') + '</div>';
+      }
+      html += shown.map(function (inc) {
+        var ups = (Array.isArray(inc.updates) ? inc.updates : []).map(function (u) {
+          return '<li><span class="meta">' + esc(u && u.at) + '</span> ' + esc(u && u.text) + '</li>';
+        }).join('');
+        return '<section class="inc"><h2>' + esc(inc.title) + '</h2>' +
+          '<div class="meta">' + esc(inc.severity) + ' &middot; ' + esc(STATES[inc.state] || inc.state) + ' &middot; started ' + esc(inc.started) + '</div>' +
+          (ups ? '<ul>' + ups + '</ul>' : '') + '</section>';
+      }).join('');
+      if (data.updated) html += '<p class="meta">Last updated ' + esc(data.updated) + '</p>';
+    }
+    el.innerHTML = html;
+  }
+
+  globalThis.render = render;
+
+  if (typeof fetch === 'function') {
+    fetch('incidents.json', { cache: 'no-store' })
+      .then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.json(); })
+      .then(render, function () { render(null); });
+  }
+})();
+</script>
+</body>
+</html>
