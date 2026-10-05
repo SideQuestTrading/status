@@ -1,1 +1,18 @@
-{"updated":"2026-10-05T02:44:39Z","incidents":[]}
+{
+  "updated": "2026-10-05T02:50:36Z",
+  "incidents": [
+    {
+      "id": "test-2026-10-05",
+      "title": "Status page test - please ignore",
+      "severity": "SEV2",
+      "state": "resolved",
+      "started": "2026-10-05T02:50:36Z",
+      "updates": [
+        {
+          "at": "2026-10-05T02:50:36Z",
+          "text": "Test of the status page. No customer impact."
+        }
+      ]
+    }
+  ]
+}
