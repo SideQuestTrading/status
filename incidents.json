@@ -1,16 +1,20 @@
 {
-  "updated": "2026-10-06T11:24:19Z",
+  "updated": "2026-10-06T11:24:34Z",
   "incidents": [
     {
       "id": "bs-1083030",
       "title": "Test: please ignore",
       "severity": "SEV1",
-      "state": "investigating",
+      "state": "resolved",
       "started": "2026-10-06T11:24:19Z",
       "updates": [
         {
           "at": "2026-10-06T11:24:19Z",
           "text": "This is a test of our status updates."
+        },
+        {
+          "at": "2026-10-06T11:24:34Z",
+          "text": "Test complete. No action needed."
         }
       ]
     }
