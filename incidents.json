@@ -1,1 +1,18 @@
-{"updated":"2026-10-05T02:44:39Z","incidents":[]}
+{
+  "updated": "2026-10-06T11:24:19Z",
+  "incidents": [
+    {
+      "id": "bs-1083030",
+      "title": "Test: please ignore",
+      "severity": "SEV1",
+      "state": "investigating",
+      "started": "2026-10-06T11:24:19Z",
+      "updates": [
+        {
+          "at": "2026-10-06T11:24:19Z",
+          "text": "This is a test of our status updates."
+        }
+      ]
+    }
+  ]
+}
